@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1110" />
+  <title>WorldClaw Lite — Echoes of the Green</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <canvas id="game" aria-label="WorldClaw Lite 3D game canvas"></canvas>
+
+  <div id="hud" class="hud hidden" aria-live="polite">
+    <div class="hud-card quest-card">
+      <div class="eyebrow">WORLDCLAW LITE</div>
+      <div id="quest" class="quest">Collect 8 signal crystals</div>
+      <div class="progress"><span id="progress-fill"></span></div>
+      <div id="counter" class="counter">0 / 8</div>
+    </div>
+
+    <div class="hud-card telemetry">
+      <div><span>SEED</span><strong id="seed-label">—</strong></div>
+      <div><span>POS</span><strong id="position-label">0, 0</strong></div>
+      <div><span>TIME</span><strong id="time-label">06:00</strong></div>
+    </div>
+
+    <canvas id="minimap" width="180" height="180" aria-label="World minimap"></canvas>
+    <div id="toast" class="toast"></div>
+    <div class="crosshair" aria-hidden="true"><i></i><b></b></div>
+    <div class="controls-hint">WASD move · Shift sprint · Space jump · Mouse look · Esc pause</div>
+  </div>
+
+  <div id="start-screen" class="overlay">
+    <div class="panel">
+      <div class="kicker">AGENTIC OPEN-WORLD PROTOTYPE</div>
+      <h1>WorldClaw <span>Lite</span></h1>
+      <p class="lede">A tiny procedural wilderness generated from a deterministic world plan. Recover the scattered signal crystals and reactivate the forgotten altar.</p>
+
+      <div class="world-plan">
+        <div><span>Biome</span><strong>Overgrown valley</strong></div>
+        <div><span>Landmarks</span><strong>Ruined altar · Watchtower · Lake</strong></div>
+        <div><span>Objective</span><strong>Recover 8 signal crystals</strong></div>
+      </div>
+
+      <label class="seed-row">
+        <span>WORLD SEED</span>
+        <input id="seed-input" value="WORLDCLAW-2608" maxlength="24" spellcheck="false" />
+      </label>
+
+      <button id="play-button" type="button">ENTER WORLD</button>
+      <p class="footnote">Desktop keyboard + mouse recommended. Click the game to recapture the mouse after pausing.</p>
+    </div>
+  </div>
+
+  <div id="pause-screen" class="overlay compact hidden">
+    <div class="panel pause-panel">
+      <div class="kicker">WORLD PAUSED</div>
+      <h2>Signal suspended</h2>
+      <p>Click below to return to the world.</p>
+      <button id="resume-button" type="button">RESUME</button>
+    </div>
+  </div>
+
+  <div id="unsupported" class="overlay hidden">
+    <div class="panel pause-panel">
+      <h2>WebGL 2 required</h2>
+      <p>This prototype needs a browser with WebGL 2 enabled.</p>
+    </div>
+  </div>
+
+  <script src="./src/core.js"></script>
+  <script src="./src/graphics.js"></script>
+  <script src="./src/world.js"></script>
+  <script src="./src/game.js"></script>
+  <script src="./src/render.js"></script>
+</body>
+</html>

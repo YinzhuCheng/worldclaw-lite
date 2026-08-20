@@ -1,0 +1,10 @@
+{
+  "name": "worldclaw-lite",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A tiny procedural low-poly open-world WebGL prototype inspired by WorldClaw.",
+  "scripts": {
+    "dev": "python3 -m http.server 4173",
+    "check": "node --check src/core.js && node --check src/graphics.js && node --check src/world.js && node --check src/game.js && node --check src/render.js"
+  }
+}

@@ -1,25 +1,53 @@
-# WorldClaw Lite
+# WorldClaw Lite — Echo Frontier
 
-A tiny, zero-dependency browser prototype inspired by the **agentic world-planning** idea in WorldClaw.
+A polished, browser-playable low-poly open-world game generated from a deterministic **ScenePlan**.
 
-This repository intentionally does **not** attempt to reproduce Tencent Hunyuan's unreleased implementation. Instead, it turns a compact deterministic "world plan" into a playable low-poly open world using only WebGL 2 and browser APIs.
+WorldClaw Lite is inspired by the world-planning direction described by WorldClaw, but it is an independent implementation. A prompt and seed are compiled into a serializable world model that controls terrain, palette, lake shape, landmarks, objectives, enemies, and ambience.
 
-## What is playable
+## Game loop
 
-- First-person mouse look with Pointer Lock
-- WASD movement, sprinting, jumping
-- ~760 × 760 unit procedural terrain
-- Procedural low-poly forest, rocks, lake and ruins
-- Deterministic world seed
-- 8 collectible signal crystals distributed across the world
-- Return-to-altar completion objective
-- Day/night lighting and distance fog
-- Live minimap, coordinates and mission HUD
-- No external runtime dependencies
+1. Describe a world and choose a deterministic seed.
+2. Explore a 920 × 920 metre procedural valley.
+3. Activate three ancient signal relays.
+4. Recover the scattered echo shards.
+5. Defend yourself from signal wraiths.
+6. Return to the World Core and synchronize the restored world signal.
+
+## Features
+
+- Prompt + seed → deterministic ScenePlan
+- Procedural terrain with vertex-colour biomes and flattened landmark zones
+- Dynamic sky, stars, clouds, fog, water shader, and day/night lighting
+- CC0 Kenney trees, rocks, signs, fences, and camp props
+- Procedural fallback models for every remote asset
+- First-person movement, sprinting, jumping, slope handling, and water wading
+- Signal Caster combat, enemy AI, health, and respawn
+- Resonance scan, objective compass, minimap, and full world map
+- Relays, shards, ruins, expedition camp, and final World Core objective
+- Procedural Web Audio ambience and effects
+- Cinematic and balanced quality presets
+- Downloadable ScenePlan JSON
+- Static hosting; no backend or API key required
+
+## Controls
+
+| Input | Action |
+|---|---|
+| `WASD` | Move |
+| `Shift` | Sprint |
+| `Space` | Jump |
+| Mouse | Look |
+| Left click | Fire Signal Caster |
+| `Q` or right click | Resonance scan |
+| Hold `E` | Activate relay / World Core |
+| `F` | Toggle lantern |
+| `M` | World map |
+| `R` | Respawn at camp |
+| `Esc` | Release pointer / pause |
 
 ## Run locally
 
-Any static web server works:
+The project has no install step:
 
 ```bash
 python3 -m http.server 4173
@@ -27,51 +55,61 @@ python3 -m http.server 4173
 
 Then open `http://localhost:4173`.
 
-## Deploy
+Run all repository checks:
 
-The project is static and can be deployed directly to Vercel, GitHub Pages, Cloudflare Pages, Netlify, or any static host.
+```bash
+npm run verify
+```
 
-## Project structure
+## Architecture
+
+```text
+Prompt + seed + quality
+          ↓
+createWorldPlan()
+          ↓
+Serializable ScenePlan
+          ↓
+World.build()
+  ├─ terrain, water, and atmosphere
+  ├─ instanced vegetation and rocks
+  ├─ core, relays, camp, and ruins
+  ├─ shards and wraith nests
+  └─ collision and interaction indices
+          ↓
+PlayerController + simulation + HUD
+```
+
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for module-level detail.
+
+## Source layout
 
 ```text
 worldclaw-lite/
 ├── index.html
 ├── styles.css
 ├── src/
-│   ├── core.js
-│   ├── graphics.js
+│   ├── config.js
+│   ├── math.js
+│   ├── assets.js
+│   ├── audio.js
+│   ├── world-model.js
 │   ├── world.js
-│   ├── game.js
-│   └── render.js
-├── package.json
-├── vercel.json
-└── README.md
+│   ├── player.js
+│   ├── ui.js
+│   └── main.js
+├── tests/
+├── scripts/qa.mjs
+├── docs/ARCHITECTURE.md
+├── ASSET_LICENSES.md
+├── LICENSE
+└── vercel.json
 ```
 
-## WorldClaw-style extension path
+## Assets and licensing
 
-The current world is generated from a deterministic seed plus a hand-authored high-level plan:
+Original game code is MIT licensed. The remotely loaded Kenney Nature Kit and Survival Kit models are CC0. Three.js is MIT licensed. Exact sources, pinned commits, and fallback behaviour are documented in [`ASSET_LICENSES.md`](ASSET_LICENSES.md).
 
-```text
-Prompt / Seed
-    ↓
-World Plan
-    ↓
-Terrain + Landmarks + Object Placement
-    ↓
-Playable World
-```
+## Scope
 
-A future version can replace the deterministic planner with an LLM that emits a `ScenePlan` JSON object while keeping the renderer/game loop unchanged.
-
-## Controls
-
-- **WASD** — move
-- **Shift** — sprint
-- **Space** — jump
-- **Mouse** — look
-- **Esc** — release mouse / pause
-
-## Credits
-
-The interaction model follows standard first-person WebGL/Pointer Lock conventions. All game code in this repository is original implementation for this prototype.
+This is a lightweight world-model game, not a reproduction of Tencent Hunyuan's unreleased WorldClaw code or model weights. The current planner is deterministic and local; it can later be replaced by an LLM or external world-generation service without replacing the renderer and gameplay layer.

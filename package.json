@@ -1,10 +1,18 @@
 {
   "name": "worldclaw-lite",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "A tiny procedural low-poly open-world WebGL prototype inspired by WorldClaw.",
+  "type": "module",
+  "description": "A prompt-driven procedural low-poly open-world exploration game for the browser.",
   "scripts": {
     "dev": "python3 -m http.server 4173",
-    "check": "node --check src/core.js && node --check src/graphics.js && node --check src/world.js && node --check src/game.js && node --check src/render.js"
-  }
+    "check": "node --check src/boot-check.js && node --check src/config.js && node --check src/math.js && node --check src/world-model.js && node --check src/assets.js && node --check src/audio.js && node --check src/world-helpers.js && node --check src/world-methods-1.js && node --check src/world-methods-2.js && node --check src/world-methods-3.js && node --check src/world-methods-4.js && node --check src/world-methods-5.js && node --check src/world.js && node --check src/player.js && node --check src/ui.js && node --check src/main.js",
+    "test": "node --test tests/*.test.mjs",
+    "verify": "npm run check && npm test && npm run qa",
+    "qa": "node scripts/qa.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
 }

@@ -2,76 +2,198 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0b1110" />
-  <title>WorldClaw Lite — Echoes of the Green</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#07100e" />
+  <meta name="description" content="WorldClaw Lite: a procedural low-poly open-world exploration game generated from a world plan." />
+  <title>WorldClaw Lite — Echo Frontier</title>
+  <link rel="icon" href="./icon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="./styles.css" />
+  <script src="./src/boot-check.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/"
+      }
+    }
+  </script>
 </head>
 <body>
   <canvas id="game" aria-label="WorldClaw Lite 3D game canvas"></canvas>
+  <div id="vignette" aria-hidden="true"></div>
+  <div id="damage-flash" aria-hidden="true"></div>
 
-  <div id="hud" class="hud hidden" aria-live="polite">
-    <div class="hud-card quest-card">
-      <div class="eyebrow">WORLDCLAW LITE</div>
-      <div id="quest" class="quest">Collect 8 signal crystals</div>
-      <div class="progress"><span id="progress-fill"></span></div>
-      <div id="counter" class="counter">0 / 8</div>
+  <header id="shell-header" class="shell-header">
+    <div class="shell-brand"><span class="brand-mark"></span><strong>WORLDCLAW</strong><small>LITE / ECHO FRONTIER</small></div>
+    <div class="shell-actions">
+      <button id="plan-button" class="ghost-button" type="button">WORLD PLAN</button>
+      <button id="credits-button" class="ghost-button" type="button">CREDITS</button>
     </div>
+  </header>
 
-    <div class="hud-card telemetry">
-      <div><span>SEED</span><strong id="seed-label">—</strong></div>
-      <div><span>POS</span><strong id="position-label">0, 0</strong></div>
-      <div><span>TIME</span><strong id="time-label">06:00</strong></div>
-    </div>
+  <main id="start-screen" class="overlay start-overlay">
+    <section class="start-panel">
+      <div class="start-copy">
+        <div class="kicker">GENERATIVE WORLD MODEL / PLAYABLE PROTOTYPE</div>
+        <h1>Echoes of a<br /><span>living frontier.</span></h1>
+        <p class="lede">Describe a world, choose a seed, then enter a procedurally sculpted valley with relays, ruins, wildlife ambience and hostile signal wraiths.</p>
 
-    <canvas id="minimap" width="180" height="180" aria-label="World minimap"></canvas>
-    <div id="toast" class="toast"></div>
-    <div class="crosshair" aria-hidden="true"><i></i><b></b></div>
-    <div class="controls-hint">WASD move · Shift sprint · Space jump · Mouse look · Esc pause</div>
-  </div>
+        <div class="plan-preview" aria-label="Generated world preview">
+          <div><span>WORLD</span><strong id="preview-world-name">—</strong></div>
+          <div><span>BIOME</span><strong id="preview-biome">—</strong></div>
+          <div><span>MISSION</span><strong id="preview-mission">—</strong></div>
+          <div><span>MODEL</span><strong id="preview-model">Procedural ScenePlan v2</strong></div>
+        </div>
 
-  <div id="start-screen" class="overlay">
-    <div class="panel">
-      <div class="kicker">AGENTIC OPEN-WORLD PROTOTYPE</div>
-      <h1>WorldClaw <span>Lite</span></h1>
-      <p class="lede">A tiny procedural wilderness generated from a deterministic world plan. Recover the scattered signal crystals and reactivate the forgotten altar.</p>
-
-      <div class="world-plan">
-        <div><span>Biome</span><strong>Overgrown valley</strong></div>
-        <div><span>Landmarks</span><strong>Ruined altar · Watchtower · Lake</strong></div>
-        <div><span>Objective</span><strong>Recover 8 signal crystals</strong></div>
+        <div class="feature-row">
+          <span>920 m WORLD</span><span>DYNAMIC SKY</span><span>CC0 3D ASSETS</span><span>COMBAT + EXPLORATION</span>
+        </div>
       </div>
 
-      <label class="seed-row">
-        <span>WORLD SEED</span>
-        <input id="seed-input" value="WORLDCLAW-2608" maxlength="24" spellcheck="false" />
-      </label>
+      <form id="world-form" class="world-console">
+        <div class="console-heading">
+          <div><span class="status-dot"></span><strong>WORLD SYNTHESIS CONSOLE</strong></div>
+          <small id="asset-status">Preparing model library…</small>
+        </div>
 
-      <button id="play-button" type="button">ENTER WORLD</button>
-      <p class="footnote">Desktop keyboard + mouse recommended. Click the game to recapture the mouse after pausing.</p>
+        <label class="field prompt-field">
+          <span>WORLD PROMPT</span>
+          <textarea id="prompt-input" rows="4" maxlength="220" spellcheck="true">A misty green valley with an ancient lake, ruined signal towers and a glowing forest at dusk</textarea>
+        </label>
+
+        <div class="field-grid">
+          <label class="field">
+            <span>SEED</span>
+            <input id="seed-input" value="WORLDCLAW-2608" maxlength="32" spellcheck="false" />
+          </label>
+          <label class="field">
+            <span>QUALITY</span>
+            <select id="quality-select">
+              <option value="high" selected>Cinematic</option>
+              <option value="low">Balanced</option>
+            </select>
+          </label>
+        </div>
+
+        <div id="loading-block" class="loading-block" aria-live="polite">
+          <div class="loading-copy"><span id="loading-label">Initializing renderer</span><strong id="loading-percent">0%</strong></div>
+          <div class="loading-track"><span id="loading-fill"></span></div>
+        </div>
+
+        <div class="console-actions">
+          <button id="randomize-button" class="secondary-button" type="button">RANDOMIZE</button>
+          <button id="enter-button" class="primary-button" type="submit" disabled>GENERATE &amp; ENTER</button>
+        </div>
+        <p class="fine-print">Desktop keyboard and mouse recommended. Remote assets have procedural fallbacks, so the world remains playable if a model CDN is unavailable.</p>
+      </form>
+    </section>
+  </main>
+
+  <section id="hud" class="hud hidden" aria-live="polite">
+    <div class="hud-panel mission-panel">
+      <div class="panel-label">ACTIVE OBJECTIVE</div>
+      <strong id="objective-title">Synchronizing world model</strong>
+      <span id="objective-detail">—</span>
+      <div class="mission-track"><i id="objective-fill"></i></div>
+      <div class="objective-nav"><span id="objective-distance">—</span><span id="objective-bearing">—</span></div>
     </div>
-  </div>
 
-  <div id="pause-screen" class="overlay compact hidden">
-    <div class="panel pause-panel">
-      <div class="kicker">WORLD PAUSED</div>
-      <h2>Signal suspended</h2>
-      <p>Click below to return to the world.</p>
-      <button id="resume-button" type="button">RESUME</button>
+    <div id="compass" class="compass" aria-label="Compass">
+      <div class="compass-line"></div>
+      <span class="compass-west">W</span><span class="compass-north">N</span><span class="compass-east">E</span>
+      <i id="compass-marker" title="Nearest objective"></i>
+      <strong id="compass-heading">000°</strong>
     </div>
-  </div>
 
-  <div id="unsupported" class="overlay hidden">
-    <div class="panel pause-panel">
-      <h2>WebGL 2 required</h2>
-      <p>This prototype needs a browser with WebGL 2 enabled.</p>
+    <div class="hud-panel status-panel">
+      <div class="status-row"><span>VITALS</span><strong id="health-label">100</strong></div>
+      <div class="meter health-meter"><i id="health-fill"></i></div>
+      <div class="status-row"><span>STAMINA</span><strong id="stamina-label">100</strong></div>
+      <div class="meter stamina-meter"><i id="stamina-fill"></i></div>
+      <div class="status-icons"><span id="lantern-status">LANTERN ON</span><span id="scan-status">SCAN READY</span></div>
     </div>
-  </div>
 
-  <script src="./src/core.js"></script>
-  <script src="./src/graphics.js"></script>
-  <script src="./src/world.js"></script>
-  <script src="./src/game.js"></script>
-  <script src="./src/render.js"></script>
+    <div class="telemetry">
+      <span id="world-label">—</span>
+      <strong id="position-label">0, 0</strong>
+      <span id="time-label">08:00</span>
+    </div>
+
+    <div class="weapon-panel">
+      <span>SIGNAL CASTER</span><strong>∞</strong>
+      <small>LEFT CLICK FIRE · Q / RIGHT CLICK SCAN</small>
+    </div>
+
+    <div id="interaction" class="interaction hidden">
+      <span class="keycap">E</span><strong id="interaction-label">INTERACT</strong>
+      <div class="interaction-track"><i id="interaction-fill"></i></div>
+    </div>
+
+    <div id="crosshair" class="crosshair" aria-hidden="true"><i></i><b></b><em></em></div>
+
+    <div class="minimap-shell">
+      <canvas id="minimap" width="220" height="220" aria-label="Local world map"></canvas>
+      <div class="minimap-label"><span>LOCAL MODEL</span><strong id="minimap-scale">240 m</strong></div>
+    </div>
+
+    <div class="control-strip">WASD MOVE · SHIFT SPRINT · SPACE JUMP · E INTERACT · F LANTERN · M MAP · R RESPAWN · ESC PAUSE</div>
+    <div id="toast-stack" class="toast-stack"></div>
+  </section>
+
+  <section id="pause-screen" class="overlay compact-overlay hidden">
+    <div class="modal-card pause-card">
+      <div class="kicker">WORLD MODEL SUSPENDED</div>
+      <h2>Signal paused.</h2>
+      <p>The simulation is still in memory. Resume to recapture the pointer.</p>
+      <button id="resume-button" class="primary-button" type="button">RESUME WORLD</button>
+      <button id="return-button" class="secondary-button" type="button">RETURN TO CONSOLE</button>
+    </div>
+  </section>
+
+  <section id="map-screen" class="overlay map-overlay hidden">
+    <div class="map-card">
+      <div class="map-header">
+        <div><span class="kicker">WORLD MODEL OVERVIEW</span><h2 id="map-world-name">—</h2></div>
+        <button id="close-map-button" class="icon-button" type="button" aria-label="Close map">×</button>
+      </div>
+      <canvas id="world-map" width="1000" height="680" aria-label="World overview map"></canvas>
+      <div class="map-legend"><span class="legend-core">World Core</span><span class="legend-relay">Relay</span><span class="legend-shard">Echo Shard</span><span class="legend-player">You</span><span class="legend-enemy">Wraith</span></div>
+    </div>
+  </section>
+
+  <section id="complete-screen" class="overlay complete-overlay hidden">
+    <div class="modal-card complete-card">
+      <div class="complete-sigil">◈</div>
+      <div class="kicker">WORLD SIGNAL RESTORED</div>
+      <h2 id="complete-world-name">Generated world stabilized.</h2>
+      <p>You reactivated every relay, recovered the echo shards and synchronized the World Core.</p>
+      <div class="completion-stats">
+        <div><span>RELAYS</span><strong id="complete-relays">3 / 3</strong></div>
+        <div><span>SHARDS</span><strong id="complete-shards">7 / 7</strong></div>
+        <div><span>WRAITHS</span><strong id="complete-wraiths">0</strong></div>
+      </div>
+      <button id="continue-button" class="primary-button" type="button">CONTINUE EXPLORING</button>
+      <button id="new-world-button" class="secondary-button" type="button">GENERATE ANOTHER WORLD</button>
+    </div>
+  </section>
+
+  <section id="info-modal" class="overlay compact-overlay hidden">
+    <article class="modal-card info-card">
+      <div class="info-header"><div><span id="info-kicker" class="kicker">WORLD PLAN</span><h2 id="info-title">ScenePlan</h2></div><button id="close-info-button" class="icon-button" type="button" aria-label="Close">×</button></div>
+      <div id="info-content" class="info-content"></div>
+      <button id="download-plan-button" class="secondary-button" type="button">DOWNLOAD WORLD PLAN JSON</button>
+    </article>
+  </section>
+
+  <section id="unsupported" class="overlay hidden">
+    <div class="modal-card pause-card">
+      <div class="kicker">RENDERER OFFLINE</div>
+      <h2>WebGL is required.</h2>
+      <p>Open this project in a modern desktop browser with hardware acceleration enabled.</p>
+    </div>
+  </section>
+
+  <noscript><div class="noscript">WorldClaw Lite requires JavaScript.</div></noscript>
+  <script type="module" src="./src/main.js"></script>
 </body>
 </html>

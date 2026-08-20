@@ -38,7 +38,12 @@ worldclaw-lite/
 ├── index.html
 ├── styles.css
 ├── src/
-│   └── main.js
+│   ├── core.js
+│   ├── graphics.js
+│   ├── world.js
+│   ├── game.js
+│   └── render.js
+├── package.json
 ├── vercel.json
 └── README.md
 ```
